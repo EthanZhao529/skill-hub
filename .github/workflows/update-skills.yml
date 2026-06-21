@@ -1,0 +1,38 @@
+name: daily-update-skills
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Crawl and build skills.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.SKILLS_TOKEN }}
+          MIN_STARS: "2"
+          MAX_REPOS: "4000"
+          WORKERS: "12"
+        run: python update_skills.py
+      - name: Commit if changed
+        run: |
+          git config user.name  "skill-hub-bot"
+          git config user.email "actions@github.com"
+          if [ -n "$(git status --porcelain skills.js)" ]; then
+            git add skills.js
+            git commit -m "chore: daily update skills.js"
+            git push
+          else
+            echo "No change."
+          fi
