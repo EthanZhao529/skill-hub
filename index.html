@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Hub · 技能收录与安装</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1d24; --card2:#222632; --line:#2c3140;
+    --text:#e8eaf0; --muted:#9aa3b2; --accent:#6ea8fe; --accent2:#7ee787;
+    --gold:#f5c451; --chip:#262b36; --chipon:#34507a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.6}
+  header{padding:26px 20px 10px;max-width:1100px;margin:0 auto}
+  h1{margin:0 0 4px;font-size:24px}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .meta{color:#7a8395;font-size:12px;margin-top:4px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px 130px}
+  .toolbar{position:sticky;top:0;background:var(--bg);padding:12px 0;z-index:5;
+    border-bottom:1px solid var(--line)}
+  .search{width:100%;padding:12px 14px;font-size:15px;border-radius:10px;
+    border:1px solid var(--line);background:var(--card);color:var(--text)}
+  .search:focus{outline:none;border-color:var(--accent)}
+  .filters{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;align-items:center}
+  .frow{display:flex;flex-wrap:wrap;gap:7px;align-items:center;width:100%}
+  .flabel{color:var(--muted);font-size:12px;margin-right:2px}
+  .chip{padding:5px 12px;border-radius:999px;background:var(--chip);color:var(--muted);
+    border:1px solid var(--line);cursor:pointer;font-size:13px;user-select:none}
+  .chip.on{background:var(--chipon);color:#fff;border-color:var(--accent)}
+  .chip.tog.on{background:#3a3320;color:var(--gold);border-color:var(--gold)}
+  .count{margin-left:auto;color:var(--muted);font-size:13px}
+  .section{margin-top:26px}
+  .section h2{font-size:15px;color:var(--muted);font-weight:600;margin:0 0 12px;
+    padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:14px 16px 12px;cursor:pointer;transition:.15s;position:relative}
+  .card:hover{border-color:var(--accent);background:var(--card2)}
+  .card.sel{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset}
+  .card.inst{opacity:.78}
+  .top{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding-right:22px;flex-wrap:wrap}
+  .star{position:absolute;top:11px;right:12px;font-size:18px;line-height:1;
+    color:#4a505e;cursor:pointer;user-select:none}
+  .star.on{color:var(--gold)}
+  .card.sel .star{display:none}
+  .check{position:absolute;top:10px;right:10px;width:22px;height:22px;display:none;
+    align-items:center;justify-content:center;background:var(--accent2);color:#11331a;
+    border-radius:50%;font-size:14px;font-weight:700}
+  .card.sel .check{display:flex}
+  .name{font-weight:600;font-size:15px;word-break:break-word}
+  .src{font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .src.off{background:#2b3550;color:#9cc2ff}
+  .src.sp{background:#2f3b2c;color:#a6e29a}
+  .src.cf{background:#3a2f22;color:#f0b066}
+  .src.vc{background:#33333b;color:#cfd3dc}
+  .src.ext{background:#2a2e38;color:#aab2c2}
+  .ver{font-size:11px;padding:2px 7px;border-radius:999px;background:#16331f;color:#7ee787;white-space:nowrap}
+  .stars{font-size:12px;color:var(--gold);white-space:nowrap}
+  .warn{font-size:11px;color:#f0a35e}
+  .desc{color:var(--muted);font-size:13px;margin:2px 0 9px}
+  .foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .kw{display:flex;flex-wrap:wrap;gap:5px;flex:1}
+  .kw span{font-size:11px;color:#8a93a3;background:#20242e;padding:1px 7px;border-radius:6px}
+  .instbtn{font-size:11px;padding:2px 9px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:#1d212a;color:var(--muted);white-space:nowrap}
+  .instbtn.on{background:#203024;color:var(--accent2);border-color:#3a5a40}
+  .trbtn{font-size:11px;padding:2px 9px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);background:#1d212a;color:#9cc2ff;white-space:nowrap}
+  .desc-zh{color:#cfe0ff;font-size:13px;margin:-2px 0 9px;padding:6px 9px;
+    background:#1b2230;border-left:2px solid var(--accent);border-radius:4px}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#13161d;
+    border-top:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;
+    align-items:center;justify-content:center;flex-wrap:wrap}
+  .bar .info{color:var(--muted);font-size:14px}
+  .btn{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:600}
+  .btn.primary{background:var(--accent);color:#0b1220}
+  .btn.primary:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:center;justify-content:center;padding:20px;z-index:20}
+  .modal.show{display:flex}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;max-width:640px;width:100%}
+  .box h3{margin:0 0 4px}
+  .box p{color:var(--muted);font-size:13px;margin:0 0 12px}
+  textarea{width:100%;height:200px;background:var(--bg);color:var(--text);border:1px solid var(--line);
+    border-radius:10px;padding:12px;font-size:13px;font-family:Consolas,monospace;resize:vertical}
+  .box .row{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+  .empty{text-align:center;color:var(--muted);padding:60px 0}
+  code{background:#20242e;padding:1px 6px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧩 Skill Hub <span style="font-size:14px;color:var(--muted)">技能收录与安装</span></h1>
+  <p class="sub">搜索 → 勾选 → 生成安装指令,贴给 Claude,由它装到 <code>~/.claude/skills</code>。收藏与「已安装」标记保存在本机。</p>
+  <p class="meta" id="meta"></p>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="🔍 中英文都行:输「游戏」自动找 game、「测试」找 test、「安全」找 security …">
+    <div class="filters">
+      <div class="frow"><span class="flabel">分类</span><span id="catFilters"></span></div>
+      <div class="frow">
+        <span class="flabel">来源</span><span id="srcFilters"></span>
+        <span style="width:14px"></span>
+        <span class="chip tog" id="favTog">⭐ 只看收藏</span>
+        <span class="chip tog" id="instTog">🙈 隐藏已装</span>
+        <span class="count" id="visCount"></span>
+      </div>
+    </div>
+  </div>
+  <div id="sections"></div>
+  <div class="empty" id="empty" style="display:none">没有匹配的技能,换个关键词或筛选条件试试。</div>
+</div>
+
+<div class="bar">
+  <span class="info">已选 <b id="selCount">0</b> 个</span>
+  <button class="btn ghost" id="clearBtn">清空选择</button>
+  <button class="btn primary" id="genBtn" disabled>生成安装指令</button>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h3>📋 安装指令</h3>
+    <p>已复制到剪贴板。回到 Claude 对话框 <b>粘贴并发送</b>,它会从来源仓库下载技能文件夹并安装。<b style="color:#f0a35e">未验证的技能装前请让 Claude 先看一遍内容。</b>安装成功后,可在卡片上点「标记已装」。</p>
+    <textarea id="cmd" readonly></textarea>
+    <div class="row">
+      <button class="btn ghost" id="closeBtn">关闭</button>
+      <button class="btn primary" id="copyBtn">再次复制</button>
+    </div>
+  </div>
+</div>
+
+<!-- 数据:curated.js 永远在;skills.js 由抓取脚本每日生成(没有时静默忽略) -->
+<script src="curated.js" onerror="window.CURATED=window.CURATED||[]"></script>
+<script src="skills.js" onerror="window.CRAWLED=window.CRAWLED||[]"></script>
+<script>
+// 合并精选 + 抓取,按 repo|name 去重(精选优先)
+function buildSkills(){
+  const cur = window.CURATED || [], craw = window.CRAWLED || [];
+  const map = new Map();
+  craw.forEach(s => map.set(s.repo + "|" + s.name, s));
+  cur.forEach(s => map.set(s.repo + "|" + s.name, s)); // 精选覆盖同名
+  return [...map.values()];
+}
+const SKILLS = buildSkills();
+
+// 中文 → 英文 检索词典:输入中文也能命中英文技能
+const ZH_EN = {
+  "游戏":["game","gaming"], "游戏开发":["gamedev","game"], "文档":["document","doc"],
+  "表格":["spreadsheet","excel","table"], "幻灯片":["slide","presentation","powerpoint"],
+  "演示":["presentation","slide"], "报告":["report"], "简历":["resume","cv"],
+  "合同":["contract"], "发票":["invoice"], "邮件":["email","mail"], "翻译":["translate","translation"],
+  "测试":["test","testing"], "调试":["debug","debugging"], "排错":["debug","troubleshoot"],
+  "评审":["review"], "审查":["review","audit"], "部署":["deploy","deployment"],
+  "数据":["data"], "数据库":["database","sql"], "分析":["analytics","analysis"],
+  "图表":["chart","graph"], "可视化":["visualization","visualize"], "仪表盘":["dashboard"],
+  "安全":["security","secure"], "漏洞":["vulnerability","vuln"], "加密":["encrypt","encryption"],
+  "渗透":["pentest","penetration"], "设计":["design"], "配色":["color","palette"], "颜色":["color"],
+  "图标":["icon"], "图片":["image","picture"], "图像":["image"], "视频":["video"], "音乐":["music"],
+  "音频":["audio"], "语音":["voice","speech"], "动画":["animation","animate"], "动图":["gif"],
+  "网页":["web","website"], "网站":["website","web"], "前端":["frontend","front-end"],
+  "后端":["backend","back-end"], "爬虫":["crawler","scraper","scraping"], "抓取":["scrape","crawl"],
+  "自动化":["automation","automate"], "机器人":["bot","robot"], "智能体":["agent"], "代理":["agent","proxy"],
+  "模型":["model"], "提示词":["prompt"], "笔记":["note","notes"], "日历":["calendar"],
+  "任务":["task","todo"], "项目":["project"], "财务":["finance","financial"], "会计":["accounting"],
+  "营销":["marketing"], "写作":["writing","write"], "总结":["summary","summarize"], "摘要":["summary","abstract"],
+  "搜索":["search"], "地图":["map"], "天气":["weather"], "股票":["stock"], "区块链":["blockchain"],
+  "支付":["payment","pay"], "聊天":["chat"], "社交":["social"], "文件":["file"], "文件夹":["directory","folder"],
+  "命令行":["cli","command"], "脚本":["script"], "接口":["api"], "编程":["code","programming","coding"],
+  "代码":["code"], "学习":["learn","learning"], "教程":["tutorial"], "教育":["education"],
+  "健康":["health"], "菜谱":["recipe"], "食谱":["recipe"], "旅行":["travel"], "版本控制":["git","version control"],
+  "云":["cloud"], "性能":["performance","perf"], "优化":["optimize","optimization"], "重构":["refactor"],
+  "表情":["emoji"], "标签":["tag","label"], "通知":["notification","notify"], "下载":["download"],
+  "上传":["upload"], "数据科学":["data science"], "人工智能":["ai","artificial intelligence"], "机器学习":["machine learning","ml"]
+};
+
+const SRC_LABEL = {off:"anthropics", sp:"superpowers", cf:"cloudflare", vc:"vercel"};
+const srcLabel = s => SRC_LABEL[s.src] || (s.repo ? s.repo.split("/")[0] : "ext");
+const srcClass = s => (["off","sp","cf","vc"].includes(s.src) ? s.src : "ext");
+
+// 分类顺序:常用在前,其余按出现顺序
+const CAT_ORDER = ["文档办公","数据·AI","开发编程","设计创意","安全","工作流·质量","技能开发","其他"];
+const CATS = [...new Set([...CAT_ORDER.filter(c=>SKILLS.some(s=>s.cat===c)),
+                          ...SKILLS.map(s=>s.cat)])].filter((v,i,a)=>a.indexOf(v)===i);
+
+const load = k => { try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"))}catch(e){return new Set()} };
+const save = (k,set) => localStorage.setItem(k, JSON.stringify([...set]));
+const favs = load("skillhub_fav");
+const installed = load("skillhub_installed");
+const selected = new Set();
+const idOf = s => s.repo + "|" + s.name;
+
+let activeCat="all", activeSrc="all", favOnly=false, hideInstalled=false;
+
+const sections = document.getElementById("sections");
+const empty = document.getElementById("empty");
+const searchEl = document.getElementById("search");
+
+// 顶部信息
+const m = window.SKILLS_META;
+document.getElementById("meta").textContent =
+  `共 ${SKILLS.length} 个技能` +
+  (m ? `(精选 ${(window.CURATED||[]).length} + 全网抓取去重,star ≥ ${m.min_stars},更新于 ${new Date(m.updated).toLocaleString("zh-CN")})`
+     : `(全网抓取数据尚未生成,当前仅显示人工精选;配置好抓取脚本后会自动扩充)`);
+
+// 分类 chips
+const catF = document.getElementById("catFilters");
+[["all","全部"], ...CATS.map(c=>[c,c])].forEach(([v,label])=>{
+  const c = mkChip(label, v==="all");
+  c.onclick = ()=>{ activeCat=v; sel(catF,c); render(); };
+  catF.appendChild(c);
+});
+// 来源 chips
+const srcF = document.getElementById("srcFilters");
+[["all","全部"],["ver","✔ 已验证"],["unv","未验证"]].forEach(([v,label])=>{
+  const c = mkChip(label, v==="all");
+  c.onclick = ()=>{ activeSrc=v; sel(srcF,c); render(); };
+  srcF.appendChild(c);
+});
+function mkChip(label,on){const c=document.createElement("span");c.className="chip"+(on?" on":"");c.textContent=label;return c;}
+function sel(container,active){[...container.children].forEach(x=>x.classList.toggle("on",x===active));}
+
+document.getElementById("favTog").onclick = e=>{ favOnly=!favOnly; e.target.classList.toggle("on",favOnly); render(); };
+document.getElementById("instTog").onclick = e=>{ hideInstalled=!hideInstalled; e.target.classList.toggle("on",hideInstalled); render(); };
+
+function matches(s, q){
+  if(activeCat!=="all" && s.cat!==activeCat) return false;
+  if(activeSrc==="ver" && !s.verified) return false;
+  if(activeSrc==="unv" && s.verified) return false;
+  if(favOnly && !favs.has(idOf(s))) return false;
+  if(hideInstalled && installed.has(idOf(s))) return false;
+  if(!q) return true;
+  const hay=(s.name+" "+s.desc+" "+(s.kw||[]).join(" ")+" "+s.repo).toLowerCase();
+  const toks = q.toLowerCase().split(/\s+/).filter(Boolean);
+  // 每个词:原词 + 词典里的英文别名,命中任一即可;多个词之间是「且」
+  return toks.every(t=>{
+    const alts = [t, ...(ZH_EN[t]||[])];
+    // 整段无空格的中文(如「游戏开发」),再扫一遍词典做子串补充
+    for(const k in ZH_EN){ if(k!==t && t.includes(k)) alts.push(...ZH_EN[k]); }
+    return alts.some(a=>hay.includes(a.toLowerCase()));
+  });
+}
+
+const PAGE = 48;                 // 每类先显示这么多,避免一次渲染上千张卡
+const expanded = new Set();       // 已点"展开更多"的分类
+
+function render(){
+  const q = searchEl.value.trim();
+  const list = SKILLS.filter(s=>matches(s,q));
+  list.sort((a,b)=> (b.verified-a.verified) || ((b.stars||0)-(a.stars||0)) || a.name.localeCompare(b.name));
+  sections.innerHTML = "";
+  CATS.forEach(cat=>{
+    const items = list.filter(s=>s.cat===cat);
+    if(!items.length) return;
+    const sec = document.createElement("div");
+    sec.className = "section";
+    sec.innerHTML = `<h2>${cat} <span style="color:#5a6172">(${items.length})</span></h2>`;
+    const grid = document.createElement("div"); grid.className="grid";
+    const showAll = expanded.has(cat);
+    const shown = showAll ? items : items.slice(0, PAGE);
+    shown.forEach(s=>grid.appendChild(makeCard(s)));
+    sec.appendChild(grid);
+    if(!showAll && items.length > PAGE){
+      const more = document.createElement("button");
+      more.className = "btn ghost";
+      more.style.cssText = "margin-top:12px;width:100%";
+      more.textContent = `展开剩余 ${items.length - PAGE} 个`;
+      more.onclick = ()=>{ expanded.add(cat); render(); };
+      sec.appendChild(more);
+    }
+    sections.appendChild(sec);
+  });
+  empty.style.display = list.length?"none":"block";
+  document.getElementById("visCount").textContent = `显示 ${list.length} / ${SKILLS.length}`;
+}
+
+function esc(t){return (t||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+function makeCard(s){
+  const id = idOf(s);
+  const card = document.createElement("div");
+  card.className = "card" + (selected.has(id)?" sel":"") + (installed.has(id)?" inst":"");
+  const starsHtml = (s.stars!=null && s.stars>0) ? `<span class="stars">★ ${s.stars}</span>` : "";
+  const verHtml = s.verified ? `<span class="ver">✔ 已验证</span>`
+                             : (s.stars!=null ? `<span class="warn">⚠ 未验证</span>` : "");
+  card.innerHTML = `
+    <div class="check">✓</div>
+    <div class="star ${favs.has(id)?"on":""}">${favs.has(id)?"★":"☆"}</div>
+    <div class="top">
+      <span class="name">${esc(s.name)}</span>
+      <span class="src ${srcClass(s)}">${esc(srcLabel(s))}</span>
+      ${starsHtml}${verHtml}
+    </div>
+    <div class="desc">${esc(s.desc)}</div>
+    <div class="desc-zh" style="display:none"></div>
+    <div class="foot">
+      <div class="kw">${(s.kw||[]).map(k=>`<span>${esc(k)}</span>`).join("")}</div>
+      ${/[a-zA-Z]{3,}/.test(s.desc||"") ? `<span class="trbtn">译</span>` : ""}
+      <span class="instbtn ${installed.has(id)?"on":""}">${installed.has(id)?"✓已装":"标记已装"}</span>
+    </div>`;
+  card.onclick = ()=>{
+    if(selected.has(id)) selected.delete(id); else selected.add(id);
+    card.classList.toggle("sel"); updateBar();
+  };
+  const tb = card.querySelector(".trbtn");
+  if(tb) tb.onclick = e=>{ e.stopPropagation(); toggleTranslate(card, s, tb); };
+  card.querySelector(".star").onclick = e=>{
+    e.stopPropagation();
+    if(favs.has(id)) favs.delete(id); else favs.add(id);
+    save("skillhub_fav",favs); render();
+  };
+  card.querySelector(".instbtn").onclick = e=>{
+    e.stopPropagation();
+    if(installed.has(id)) installed.delete(id); else installed.add(id);
+    save("skillhub_installed",installed); render();
+  };
+  return card;
+}
+
+// 详情翻译(MyMemory,英→中),结果缓存在本地,重复查看不再请求
+const trCache = JSON.parse(localStorage.getItem("skillhub_tr") || "{}");
+async function toggleTranslate(card, s, btn){
+  const box = card.querySelector(".desc-zh");
+  if(box.style.display !== "none"){ box.style.display="none"; btn.textContent="译"; return; }
+  const cached = trCache[s.desc];
+  if(box.dataset.done || cached){
+    if(!box.dataset.done){ box.textContent = cached; box.dataset.done="1"; }
+    box.style.display="block"; btn.textContent="原文"; return;
+  }
+  btn.textContent="翻译中…";
+  try{
+    const r = await fetch("https://api.mymemory.translated.net/get?q=" +
+                          encodeURIComponent(s.desc.slice(0,480)) + "&langpair=en|zh-CN");
+    const j = await r.json();
+    const zh = j && j.responseData && j.responseData.translatedText;
+    if(!zh) throw new Error("empty");
+    box.textContent = zh; box.dataset.done="1"; box.style.display="block"; btn.textContent="原文";
+    trCache[s.desc] = zh; localStorage.setItem("skillhub_tr", JSON.stringify(trCache));
+  }catch(e){
+    btn.textContent="译·失败"; setTimeout(()=>{btn.textContent="译";}, 1800);
+  }
+}
+
+function updateBar(){
+  document.getElementById("selCount").textContent = selected.size;
+  document.getElementById("genBtn").disabled = selected.size===0;
+}
+
+function buildCmd(){
+  const picks = SKILLS.filter(s=>selected.has(idOf(s)));
+  const hasUnv = picks.some(s=>!s.verified);
+  let t = "请帮我安装以下 Claude skill 到我的用户级技能目录(~/.claude/skills),从对应仓库下载每个技能的整个文件夹:\n\n";
+  picks.forEach((s,i)=>{
+    t += `${i+1}. ${s.name}${s.verified?"":" 〔未验证〕"}  —  来源 ${s.repo},路径 ${s.path}\n`;
+    t += `   ${s.url || ("https://github.com/"+s.repo+"/tree/main/"+s.path)}\n`;
+  });
+  if(hasUnv) t += "\n注意:其中标〔未验证〕的来自非官方仓库,安装前请先帮我看一遍它的 SKILL.md 内容,确认没有可疑/恶意指令再装。\n";
+  t += "\n安装后请告诉我每个技能是否安装成功。";
+  return t;
+}
+
+async function copy(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch(e){ const ta=document.getElementById("cmd"); ta.select(); document.execCommand("copy"); return true; }
+}
+
+document.getElementById("genBtn").onclick = async ()=>{
+  const t = buildCmd();
+  document.getElementById("cmd").value = t;
+  await copy(t);
+  document.getElementById("modal").classList.add("show");
+};
+document.getElementById("copyBtn").onclick = ()=> copy(document.getElementById("cmd").value);
+document.getElementById("closeBtn").onclick = ()=> document.getElementById("modal").classList.remove("show");
+document.getElementById("clearBtn").onclick = ()=>{ selected.clear(); render(); updateBar(); };
+searchEl.oninput = ()=>{ expanded.clear(); render(); };
+
+render(); updateBar();
+</script>
+</body>
+</html>
